@@ -532,7 +532,7 @@ def mark_notification_read(
     if not current_user:
         return RedirectResponse("/login", status_code=303)
     
-    notifications.mark_notification_read(db, notification_id, current_user.id)
+    notifications.mark_notification_read(db, notification_id, int(current_user.id))
     return RedirectResponse("/notifications", status_code=303)
 
 # Analytics Routes
@@ -549,10 +549,11 @@ def analytics_dashboard(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/login", status_code=303)
     
     # Get analytics data for current user's tasks only
-    overview = crud.get_analytics_overview(db, current_user.id)
-    trends = crud.get_weekly_trends(db, current_user.id)
-    monthly_stats = crud.get_monthly_stats(db, current_user.id)
-    user_productivity = crud.get_user_productivity(db, current_user.id)
+    user_id = int(current_user.id)
+    overview = crud.get_analytics_overview(db, user_id)
+    trends = crud.get_weekly_trends(db, user_id)
+    monthly_stats = crud.get_monthly_stats(db, user_id)
+    user_productivity = crud.get_user_productivity(db, user_id)
     
     # Get recent task activity for the user (using id since created_at may not exist)
     recent_tasks = db.query(models.Task).filter(
