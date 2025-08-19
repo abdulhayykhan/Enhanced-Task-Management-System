@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Task Management System{% endblock %}</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Professional task management system for teams and individuals">
   
   <!-- Preconnect for performance -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -199,27 +201,168 @@
       }
     }
     
-    /* Dark mode styles */
+    /* Enhanced Dark Mode */
     [data-bs-theme="dark"] {
-      --shadow-light: 0 2px 10px rgba(0,0,0,0.3);
-      --shadow-hover: 0 4px 20px rgba(0,0,0,0.4);
+      --shadow-light: 0 2px 10px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 20px rgba(0,0,0,0.6);
+      --gradient-primary: linear-gradient(135deg, #4c51bf 0%, #553c9a 100%);
+      background-color: #1a202c !important;
+      color: #e2e8f0 !important;
+    }
+    
+    [data-bs-theme="dark"] body {
+      background-color: #1a202c;
+      color: #e2e8f0;
+    }
+    
+    [data-bs-theme="dark"] .page-header {
+      background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
     }
     
     [data-bs-theme="dark"] .card {
       background-color: #2d3748;
-      color: white;
+      color: #e2e8f0;
+      border: 1px solid #4a5568;
+    }
+    
+    [data-bs-theme="dark"] .card-header {
+      background-color: #374151 !important;
+      border-bottom: 1px solid #4a5568;
+      color: #f7fafc !important;
     }
     
     [data-bs-theme="dark"] .form-control,
     [data-bs-theme="dark"] .form-select {
-      background-color: #4a5568;
+      background-color: #374151;
       border-color: #4a5568;
-      color: white;
+      color: #e2e8f0;
+    }
+    
+    [data-bs-theme="dark"] .form-control:focus,
+    [data-bs-theme="dark"] .form-select:focus {
+      background-color: #4a5568;
+      border-color: #667eea;
+      color: #f7fafc;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
     
     [data-bs-theme="dark"] .table {
       background-color: #2d3748;
+      color: #e2e8f0;
+    }
+    
+    [data-bs-theme="dark"] .table thead th {
+      background-color: #374151;
+      color: #f7fafc;
+      border-color: #4a5568;
+    }
+    
+    [data-bs-theme="dark"] .table tbody tr:hover {
+      background-color: rgba(74, 85, 104, 0.3);
+    }
+    
+    [data-bs-theme="dark"] .table td {
+      border-color: #4a5568;
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-primary {
+      color: #667eea;
+      border-color: #667eea;
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-primary:hover {
+      background-color: #667eea;
+      border-color: #667eea;
       color: white;
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-secondary {
+      color: #a0aec0;
+      border-color: #4a5568;
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-secondary:hover {
+      background-color: #4a5568;
+      border-color: #4a5568;
+      color: #f7fafc;
+    }
+    
+    [data-bs-theme="dark"] .text-primary {
+      color: #90cdf4 !important;
+    }
+    
+    [data-bs-theme="dark"] .text-muted {
+      color: #a0aec0 !important;
+    }
+    
+    [data-bs-theme="dark"] .badge {
+      color: #1a202c;
+    }
+    
+    [data-bs-theme="dark"] .alert {
+      background-color: #2d3748;
+      border-color: #4a5568;
+      color: #e2e8f0;
+    }
+    
+    [data-bs-theme="dark"] .toast {
+      background-color: #2d3748;
+      color: #e2e8f0;
+      border: 1px solid #4a5568;
+    }
+    
+    [data-bs-theme="dark"] .input-group-text {
+      background-color: #374151;
+      border-color: #4a5568;
+      color: #e2e8f0;
+    }
+    
+    [data-bs-theme="dark"] .progress {
+      background-color: #374151;
+    }
+    
+    /* Typography improvements */
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+    }
+    
+    .display-4 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    
+    .lead {
+      font-weight: 400;
+      opacity: 0.8;
+    }
+    
+    p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    
+    .text-muted {
+      opacity: 0.7;
+    }
+    
+    /* Improved link styles */
+    a {
+      text-decoration: none;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    a:hover {
+      text-decoration: none;
+    }
+    
+    .text-decoration-none:hover {
+      color: #667eea !important;
+    }
+    
+    [data-bs-theme="dark"] .text-decoration-none:hover {
+      color: #90cdf4 !important;
     }
   </style>
 </head>
@@ -270,11 +413,11 @@
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
-  <!-- Dark Mode Toggle -->
+  <!-- Enhanced Dark Mode & Performance Scripts -->
   <script>
-    const body = document.body;
+    // Enhanced Dark Mode Toggle with better transitions
     const toggle = document.getElementById("darkToggle");
-    const container = document.querySelector('.container');
+    const html = document.documentElement;
     
     // Load saved theme
     const savedTheme = localStorage.getItem('darkMode');
@@ -283,60 +426,59 @@
     }
     
     toggle.addEventListener("click", () => {
-      if (body.classList.contains('bg-dark')) {
+      // Add transition class for smooth mode switching
+      document.body.style.transition = 'all 0.3s ease';
+      
+      if (html.getAttribute('data-bs-theme') === 'dark') {
         disableDarkMode();
       } else {
         enableDarkMode();
       }
+      
+      // Remove transition after animation
+      setTimeout(() => {
+        document.body.style.transition = '';
+      }, 300);
     });
     
     function enableDarkMode() {
-      body.classList.add("bg-dark", "text-white");
-      body.classList.remove("bg-light");
-      toggle.innerHTML = "☀️ Light Mode";
-      toggle.classList.remove("btn-outline-secondary");
-      toggle.classList.add("btn-outline-light");
-      
-      // Update table styles
-      const tables = document.querySelectorAll('.table');
-      tables.forEach(table => {
-        table.classList.add('table-dark');
-      });
-      
-      // Update cards
-      const cards = document.querySelectorAll('.card:not(.bg-success):not(.bg-warning):not(.bg-danger):not(.bg-info):not(.bg-secondary)');
-      cards.forEach(card => {
-        card.classList.add('bg-secondary', 'text-white');
-      });
-      
+      html.setAttribute('data-bs-theme', 'dark');
+      toggle.innerHTML = '<i class="fas fa-sun me-2"></i>Light Mode';
+      toggle.classList.remove('btn-outline-light');
+      toggle.classList.add('btn-outline-warning');
       localStorage.setItem('darkMode', 'true');
+      
+      // Update meta theme color for mobile browsers
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#1a202c');
+      }
+      
+      // Update loading spinner background for dark mode
+      const loadingSpinner = document.getElementById('loading-spinner');
+      if (loadingSpinner) {
+        loadingSpinner.style.background = 'rgba(26, 32, 44, 0.9)';
+      }
     }
     
     function disableDarkMode() {
-      body.classList.remove("bg-dark", "text-white");
-      body.classList.add("bg-light");
-      toggle.innerHTML = "🌙 Dark Mode";
-      toggle.classList.remove("btn-outline-light");
-      toggle.classList.add("btn-outline-secondary");
-      
-      // Update table styles
-      const tables = document.querySelectorAll('.table');
-      tables.forEach(table => {
-        table.classList.remove('table-dark');
-      });
-      
-      // Update cards
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        if (!card.classList.contains('bg-success') && 
-            !card.classList.contains('bg-warning') && 
-            !card.classList.contains('bg-danger') && 
-            !card.classList.contains('bg-info')) {
-          card.classList.remove('bg-secondary', 'text-white');
-        }
-      });
-      
+      html.setAttribute('data-bs-theme', 'light');
+      toggle.innerHTML = '<i class="fas fa-moon me-2"></i>Dark Mode';
+      toggle.classList.remove('btn-outline-warning');
+      toggle.classList.add('btn-outline-light');
       localStorage.setItem('darkMode', 'false');
+      
+      // Update meta theme color for mobile browsers
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', '#ffffff');
+      }
+      
+      // Update loading spinner background for light mode
+      const loadingSpinner = document.getElementById('loading-spinner');
+      if (loadingSpinner) {
+        loadingSpinner.style.background = 'rgba(255, 255, 255, 0.9)';
+      }
     }
   </script>
   
