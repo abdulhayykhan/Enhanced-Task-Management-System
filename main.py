@@ -123,16 +123,15 @@ def read_root(
     status: str = Query(None, description="Filter by status"),
     db: Session = Depends(get_db)
 ):
-    """Main page showing all tasks with search and filter functionality"""
+    """Main page showing user's tasks with search and filter functionality"""
     current_user = auth.get_current_user(request, db)
     
-    # Build query
-    query = db.query(models.Task)
+    # Redirect to login if not authenticated
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
     
-    # Filter by user if authenticated (optional for now)
-    if current_user:
-        # Show all tasks for now, but could filter by user_id
-        pass
+    # Build query for user's tasks only
+    query = db.query(models.Task).filter(models.Task.owner_id == current_user.id)
     
     # Apply search filter
     if q:
@@ -161,6 +160,8 @@ def read_root(
 def new_task(request: Request, db: Session = Depends(get_db)):
     """Show form to create a new task"""
     current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
     return templates.TemplateResponse("form.html", {
         "request": request, 
         "task": None,
@@ -179,6 +180,8 @@ async def create_task_form(
 ):
     """Create a new task from form submission with file upload"""
     current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
     
     # Convert due_date string to date object if provided
     parsed_due_date = None
@@ -213,7 +216,7 @@ async def create_task_form(
     if current_user:
         task.owner_id = current_user.id
     if filename:
-        task.attachment = filename
+        setattr(task, 'attachment', filename)
     db.commit()
     
     return RedirectResponse("/", status_code=303)
@@ -222,9 +225,19 @@ async def create_task_form(
 def task_detail(task_id: int, request: Request, db: Session = Depends(get_db)):
     """Show task detail page"""
     current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
     task = crud.get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Check if user owns the task or it's shared with them
+    is_owner = task.owner_id == current_user.id
+    is_shared = current_user in task.shared_with
+    if not is_owner and not is_shared:
+        raise HTTPException(status_code=403, detail="Not authorized to view this task")
+    
     return templates.TemplateResponse("detail.html", {
         "request": request, 
         "task": task,
@@ -235,9 +248,17 @@ def task_detail(task_id: int, request: Request, db: Session = Depends(get_db)):
 def edit_task(task_id: int, request: Request, db: Session = Depends(get_db)):
     """Show form to edit an existing task"""
     current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
     task = crud.get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Only task owner can edit
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this task")
+    
     return templates.TemplateResponse("form.html", {
         "request": request, 
         "task": task,
@@ -255,6 +276,17 @@ def update_task_form(
     db: Session = Depends(get_db)
 ):
     """Update an existing task from form submission"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    # Check task ownership
+    task = crud.get_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this task")
+    
     # Convert due_date string to date object if provided
     parsed_due_date = None
     if due_date:
@@ -282,8 +314,7 @@ def update_task_form(
         raise HTTPException(status_code=404, detail="Task not found")
     
     # Notify shared users if status changed
-    if old_status != status and task.shared_with:
-        current_user = auth.get_current_user(request, db)
+    if old_status != status and len(task.shared_with) > 0:
         updater_name = current_user.username if current_user else "Someone"
         message = f"Task '{task.title}' status changed from '{old_status}' to '{status}' by {updater_name}"
         
@@ -298,11 +329,20 @@ def update_task_form(
     return RedirectResponse("/", status_code=303)
 
 @app.get("/tasks/{task_id}/delete")
-def delete_task_form(task_id: int, db: Session = Depends(get_db)):
+def delete_task_form(task_id: int, request: Request, db: Session = Depends(get_db)):
     """Delete a task and redirect to home"""
-    deleted = crud.delete_task(db, task_id)
-    if not deleted:
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    # Check task ownership before deletion
+    task = crud.get_task(db, task_id)
+    if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this task")
+    
+    crud.delete_task(db, task_id)
     return RedirectResponse("/", status_code=303)
 
 # WebSocket endpoint for real-time notifications
