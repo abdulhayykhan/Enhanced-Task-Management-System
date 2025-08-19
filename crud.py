@@ -121,13 +121,13 @@ def get_user_productivity(db: Session):
     from sqlalchemy import case
     
     user_stats = db.query(
-        models.User.username,
+        models.User.name,
         func.count(models.Task.id).label('total_tasks'),
         func.sum(case((models.Task.status == 'Completed', 1), else_=0)).label('completed_tasks')
     ).join(
         models.Task, models.User.id == models.Task.owner_id
     ).group_by(
-        models.User.username
+        models.User.name
     ).all()
     
     return user_stats

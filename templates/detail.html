@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row">
-  <div class="col-lg-8 mx-auto">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
+<div class="row justify-content-center">
+  <div class="col-lg-8 col-md-10">
+    <div class="card shadow">
+      <div class="card-header text-center bg-primary text-white d-flex justify-content-between align-items-center">
+        <div></div>
         <h3 class="card-title mb-0">{{ task.title }}</h3>
         <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
           {{ task.status }}
@@ -31,13 +32,13 @@
         </div>
         {% endif %}
         
-        <div class="d-flex gap-2">
-          <a href="/tasks/{{ task.id }}/edit" class="btn btn-warning">Edit Task</a>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="/tasks/{{ task.id }}/edit" class="btn btn-warning btn-lg px-4">Edit Task</a>
           {% if current_user and task.owner_id == current_user.id %}
-            <a href="/tasks/{{ task.id }}/share" class="btn btn-info">Share Task</a>
+            <a href="/tasks/{{ task.id }}/share" class="btn btn-info btn-lg px-4">Share Task</a>
           {% endif %}
-          <a href="/tasks/{{ task.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this task?')">Delete Task</a>
-          <a href="/" class="btn btn-secondary">Back to Tasks</a>
+          <a href="/tasks/{{ task.id }}/delete" class="btn btn-danger btn-lg px-4" onclick="return confirm('Are you sure you want to delete this task?')">Delete Task</a>
+          <a href="/" class="btn btn-outline-secondary btn-lg px-4">Back to Tasks</a>
         </div>
         
         {% if task.shared_with %}

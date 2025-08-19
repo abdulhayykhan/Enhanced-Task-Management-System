@@ -88,9 +88,12 @@
 </div>
 {% else %}
 <div class="text-center py-5">
-  <h4 class="text-muted">No tasks yet</h4>
-  <p class="text-muted">Create your first task to get started!</p>
-  <a href="/tasks/new" class="btn btn-primary">+ Add Task</a>
+  <div class="mb-4">
+    <i class="fas fa-tasks" style="font-size: 4rem; color: #6c757d;"></i>
+  </div>
+  <h4 class="text-muted mb-3">No tasks yet</h4>
+  <p class="text-muted mb-4">Create your first task to get started on your productivity journey!</p>
+  <a href="/tasks/new" class="btn btn-primary btn-lg px-4">+ Create Your First Task</a>
 </div>
 {% endif %}
 {% endblock %}

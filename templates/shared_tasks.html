@@ -88,12 +88,20 @@
 </div>
 {% else %}
 <div class="text-center py-5">
-  <h4 class="text-muted">No {{ 'shared' if view == 'with-me' else 'tasks shared by you' }} tasks yet</h4>
+  <div class="mb-4">
+    {% if view == 'with-me' %}
+      <i class="fas fa-share-alt" style="font-size: 4rem; color: #6c757d;"></i>
+    {% else %}
+      <i class="fas fa-users" style="font-size: 4rem; color: #6c757d;"></i>
+    {% endif %}
+  </div>
+  <h4 class="text-muted mb-3">No {{ 'shared' if view == 'with-me' else 'tasks shared by you' }} tasks yet</h4>
   {% if view == 'with-me' %}
-    <p class="text-muted">When others share tasks with you, they'll appear here.</p>
+    <p class="text-muted mb-4">When others share tasks with you, they'll appear here for collaboration.</p>
+    <a href="/" class="btn btn-outline-primary btn-lg px-4">View My Tasks</a>
   {% else %}
-    <p class="text-muted">Share your tasks with others to collaborate!</p>
-    <a href="/" class="btn btn-primary">Go to My Tasks</a>
+    <p class="text-muted mb-4">Share your tasks with others to collaborate and work together!</p>
+    <a href="/" class="btn btn-primary btn-lg px-4">Go to My Tasks</a>
   {% endif %}
 </div>
 {% endif %}
