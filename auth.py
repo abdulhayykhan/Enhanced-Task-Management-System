@@ -50,10 +50,10 @@ def decode_access_token(token: str):
     """Decode JWT access token"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
+        email = payload.get("sub")
+        if email is None:
             return None
-        return str(username)
+        return str(email)
     except JWTError:
         return None
 
@@ -63,11 +63,11 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not token:
         return None
     
-    username = decode_access_token(token)
-    if username is None:
+    email = decode_access_token(token)
+    if email is None:
         return None
     
-    user = db.query(models.User).filter(models.User.username == username).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
     return user
 
 def require_auth(request: Request, db: Session = Depends(get_db)):

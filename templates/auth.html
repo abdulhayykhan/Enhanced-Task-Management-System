@@ -14,10 +14,18 @@
         {% endif %}
         
         <form method="post">
+          {% if action == "register" %}
           <div class="mb-3">
-            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="username" name="username" 
-                   value="{{ username or '' }}" required>
+            <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="name" name="name" 
+                   value="{{ name or '' }}" required>
+          </div>
+          {% endif %}
+          
+          <div class="mb-3">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ email or '' }}" required>
           </div>
           
           <div class="mb-3">

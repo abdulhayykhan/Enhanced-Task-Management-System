@@ -14,7 +14,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)  # store hashed password
     
     # Relationship to tasks
@@ -23,7 +24,7 @@ class User(Base):
     notifications = relationship("Notification", back_populates="user")
 
     def __repr__(self):
-        return f"<User(id={self.id}, username='{self.username}')>"
+        return f"<User(id={self.id}, name='{self.name}', email='{self.email}')>"
 
 class Task(Base):
     """Task model for the database"""

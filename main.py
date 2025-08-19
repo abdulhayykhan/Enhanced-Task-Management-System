@@ -57,23 +57,25 @@ def register_page(request: Request):
 @app.post("/register")
 def register_user(
     request: Request,
-    username: str = Form(...), 
+    name: str = Form(...),
+    email: str = Form(...), 
     password: str = Form(...), 
     db: Session = Depends(get_db)
 ):
     """Create a new user account"""
     # Check if user already exists
-    existing_user = db.query(models.User).filter(models.User.username == username).first()
+    existing_user = db.query(models.User).filter(models.User.email == email).first()
     if existing_user:
         return templates.TemplateResponse("auth.html", {
             "request": request,
             "action": "register",
-            "error": "Username already exists",
-            "username": username
+            "error": "Email already registered",
+            "name": name,
+            "email": email
         })
     
     # Create new user
-    user = models.User(username=username, password=auth.hash_password(password))
+    user = models.User(name=name, email=email, password=auth.hash_password(password))
     db.add(user)
     db.commit()
     return RedirectResponse("/login", status_code=303)
@@ -89,21 +91,21 @@ def login_page(request: Request):
 @app.post("/login")
 def login_user(
     request: Request,
-    username: str = Form(...), 
+    email: str = Form(...), 
     password: str = Form(...), 
     db: Session = Depends(get_db)
 ):
     """Authenticate user and create session"""
-    user = db.query(models.User).filter(models.User.username == username).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
     if not user or not auth.verify_password(password, str(user.password)):
         return templates.TemplateResponse("auth.html", {
             "request": request,
             "action": "login",
-            "error": "Invalid username or password",
-            "username": username
+            "error": "Invalid email or password",
+            "email": email
         })
     
-    token = auth.create_access_token({"sub": user.username})
+    token = auth.create_access_token({"sub": user.email})
     response = RedirectResponse("/", status_code=303)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
@@ -383,10 +385,10 @@ def share_task_page(task_id: int, request: Request, db: Session = Depends(get_db
 async def share_task_action(
     task_id: int,
     request: Request,
-    username: str = Form(...),
+    email: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    """Share a task with another user"""
+    """Share a task with another user by email"""
     current_user = auth.get_current_user(request, db)
     if not current_user:
         return RedirectResponse("/login", status_code=303)
@@ -404,14 +406,25 @@ async def share_task_action(
             "error": "Not authorized to share this task"
         })
     
-    # Find user to share with
-    user_to_share = db.query(models.User).filter(models.User.username == username).first()
+    # Find user to share with by email
+    user_to_share = db.query(models.User).filter(models.User.email == email).first()
     if not user_to_share:
         return templates.TemplateResponse("share_task.html", {
             "request": request,
             "task": task,
             "current_user": current_user,
-            "error": "User not found"
+            "error": f"No user found with email: {email}",
+            "email": email
+        })
+    
+    # Don't allow sharing with yourself
+    if user_to_share.id == current_user.id:
+        return templates.TemplateResponse("share_task.html", {
+            "request": request,
+            "task": task,
+            "current_user": current_user,
+            "error": "You cannot share a task with yourself",
+            "email": email
         })
     
     # Check if already shared
@@ -420,7 +433,8 @@ async def share_task_action(
             "request": request,
             "task": task,
             "current_user": current_user,
-            "error": f"Task is already shared with {username}"
+            "error": f"Task is already shared with {user_to_share.name} ({email})",
+            "email": email
         })
     
     # Share the task
@@ -428,10 +442,15 @@ async def share_task_action(
     db.commit()
     
     # Send notification
-    message = f"Task '{task.title}' was shared with you by {current_user.username}"
+    message = f"Task '{task.title}' was shared with you by {current_user.name}"
     await notifications.notify_user(db, user_to_share.id, message)
     
-    return RedirectResponse(f"/tasks/{task_id}", status_code=303)
+    return templates.TemplateResponse("share_task.html", {
+        "request": request,
+        "task": task,
+        "current_user": current_user,
+        "success": f"Task successfully shared with {user_to_share.name} ({email})"
+    })
 
 @app.get("/shared-tasks", response_class=HTMLResponse)
 def get_shared_tasks(request: Request, db: Session = Depends(get_db)):

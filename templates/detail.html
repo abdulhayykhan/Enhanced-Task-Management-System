@@ -45,14 +45,14 @@
         <h5>Shared with:</h5>
         <div class="d-flex flex-wrap gap-2">
           {% for user in task.shared_with %}
-            <span class="badge bg-secondary">{{ user.username }}</span>
+            <span class="badge bg-secondary">{{ user.name }} ({{ user.email }})</span>
           {% endfor %}
         </div>
         {% endif %}
         
         {% if task.owner %}
         <hr>
-        <p><strong>Task Owner:</strong> {{ task.owner.username }}</p>
+        <p><strong>Task Owner:</strong> {{ task.owner.name }} ({{ task.owner.email }})</p>
         {% endif %}
       </div>
     </div>

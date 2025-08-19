@@ -31,7 +31,8 @@ class TaskOut(TaskBase):
 # User schemas
 class UserBase(BaseModel):
     """Base schema for User"""
-    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    name: str = Field(..., min_length=1, max_length=100, description="Full name")
+    email: str = Field(..., description="Email address")
 
 class UserCreate(UserBase):
     """Schema for creating a new user"""
