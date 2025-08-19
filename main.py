@@ -453,20 +453,30 @@ async def share_task_action(
     })
 
 @app.get("/shared-tasks", response_class=HTMLResponse)
-def get_shared_tasks(request: Request, db: Session = Depends(get_db)):
-    """Show tasks shared with the current user"""
+def get_shared_tasks(request: Request, view: str = Query("with-me"), db: Session = Depends(get_db)):
+    """Show tasks shared with or by the current user"""
     current_user = auth.get_current_user(request, db)
     if not current_user:
         return RedirectResponse("/login", status_code=303)
     
-    shared_tasks = current_user.shared_tasks
-    return templates.TemplateResponse("index.html", {
+    if view == "by-me":
+        # Tasks shared by the current user (tasks they own that are shared with others)
+        tasks = db.query(models.Task).filter(
+            models.Task.owner_id == current_user.id,
+            models.Task.shared_with.any()
+        ).all()
+        page_title = "Tasks I've Shared"
+    else:
+        # Tasks shared with the current user
+        tasks = current_user.shared_tasks
+        page_title = "Tasks Shared with Me"
+    
+    return templates.TemplateResponse("shared_tasks.html", {
         "request": request,
-        "tasks": shared_tasks,
-        "q": None,
-        "status": None,
+        "tasks": tasks,
         "current_user": current_user,
-        "page_title": "Shared Tasks"
+        "page_title": page_title,
+        "view": view
     })
 
 @app.get("/notifications", response_class=HTMLResponse)

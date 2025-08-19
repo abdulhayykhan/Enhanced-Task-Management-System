@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack collaborative task management system built with FastAPI and SQLAlchemy. The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks. Key features include user authentication, task sharing between users, real-time notifications via WebSockets, advanced search and filtering capabilities, progress tracking, and comprehensive testing. Each task has a title, description, status, due date, and can be shared with multiple users. The application includes data validation through Pydantic schemas, HTML templates using Jinja2, user authentication with JWT tokens, real-time collaboration features, and supports database operations through SQLAlchemy ORM with PostgreSQL database integration.
+This is a full-stack collaborative task management system built with FastAPI and SQLAlchemy. The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks. Key features include email-based user authentication with full name registration, task sharing via email addresses, real-time notifications via WebSockets, advanced search and filtering capabilities, progress tracking, and comprehensive testing. Each task has a title, description, status, due date, and can be shared with multiple users via their email addresses. The application includes data validation through Pydantic schemas, HTML templates using Jinja2, JWT token authentication, real-time collaboration features, and supports database operations through SQLAlchemy ORM with PostgreSQL database integration. The system now features dedicated shared task views separating "Tasks Shared with Me" and "Tasks I've Shared" for better collaboration management.
 
 ## User Preferences
 
@@ -23,16 +23,19 @@ Preferred communication style: Simple, everyday language.
 - **Authentication UI**: Login and registration forms with error handling and user feedback
 
 ### Authentication System
-- **User Management**: Registration and login functionality with secure password hashing
+- **Email-based Registration**: Users register with full name, email address, and password
+- **Email Login**: Authentication using email address instead of username
 - **JWT Tokens**: JSON Web Token-based authentication stored in HTTP-only cookies
 - **Password Security**: Bcrypt hashing for secure password storage
 - **Session Management**: Automatic login/logout with token expiration
+- **User Identity**: Full name and email displayed throughout the interface
 
 ### Database Design
 - **Multi-Entity Model**: Task, User, and Notification models with complex relationship mapping
+- **Updated User Model**: Users have name and email fields instead of username
 - **Task Sharing**: Many-to-many relationship between tasks and users via task_shares association table
 - **PostgreSQL Database**: Uses PostgreSQL database with automatic table creation on application startup
-- **Database Indexes**: Optimized queries with indexes on status, due_date, username, and notification fields
+- **Database Indexes**: Optimized queries with indexes on status, due_date, email, and notification fields
 - **Foreign Key Relationships**: Tasks have owners and can be shared with multiple users
 - **Notification System**: Persistent notification storage with read/unread status tracking
 - **Environment-based Configuration**: Database connection managed through DATABASE_URL environment variable
@@ -75,12 +78,14 @@ Preferred communication style: Simple, everyday language.
 - **Comprehensive Testing**: Unit tests covering API endpoints and web pages
 
 ### Collaboration Features
-- **Task Sharing**: Task owners can share tasks with other users
+- **Email-based Task Sharing**: Task owners can share tasks by entering recipient email addresses
+- **Dual Shared Task Views**: Separate views for "Tasks Shared with Me" and "Tasks I've Shared"
 - **Real-time Updates**: WebSocket connections for instant notifications
 - **Notification System**: Database-persisted notifications with WebSocket delivery
-- **User Collaboration**: Multiple users can view and edit shared tasks
+- **User Collaboration**: Multiple users can view shared tasks with appropriate permissions
 - **Status Notifications**: Automatic alerts when shared tasks are updated
-- **Shared Task Views**: Dedicated page for viewing tasks shared with you
+- **Permission-based Access**: Shared tasks are view-only for recipients, full control for owners
+- **Email Validation**: System validates email addresses exist before allowing task sharing
 
 ## External Dependencies
 
