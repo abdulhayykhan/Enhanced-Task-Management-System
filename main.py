@@ -543,13 +543,21 @@ def analytics_overview_api(db: Session = Depends(get_db)):
 
 @app.get("/analytics", response_class=HTMLResponse)
 def analytics_dashboard(request: Request, db: Session = Depends(get_db)):
-    """Show analytics dashboard with charts and statistics"""
+    """Show analytics dashboard with charts and statistics for current user's tasks"""
     current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
     
-    overview = crud.get_analytics_overview(db)
-    trends = crud.get_weekly_trends(db)
-    monthly_stats = crud.get_monthly_stats(db)
-    user_productivity = crud.get_user_productivity(db)
+    # Get analytics data for current user's tasks only
+    overview = crud.get_analytics_overview(db, current_user.id)
+    trends = crud.get_weekly_trends(db, current_user.id)
+    monthly_stats = crud.get_monthly_stats(db, current_user.id)
+    user_productivity = crud.get_user_productivity(db, current_user.id)
+    
+    # Get recent task activity for the user (using id since created_at may not exist)
+    recent_tasks = db.query(models.Task).filter(
+        models.Task.owner_id == current_user.id
+    ).order_by(models.Task.id.desc()).limit(5).all()
     
     return templates.TemplateResponse("analytics.html", {
         "request": request,
@@ -557,6 +565,7 @@ def analytics_dashboard(request: Request, db: Session = Depends(get_db)):
         "trends": trends,
         "monthly_stats": monthly_stats,
         "user_productivity": user_productivity,
+        "recent_tasks": recent_tasks,
         "current_user": current_user
     })
 
