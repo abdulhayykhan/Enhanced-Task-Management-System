@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, Form, Query, WebSocket, WebSocketDisconnect, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -34,8 +34,11 @@ app.add_middleware(
 
 # Setup uploads directory and static files
 UPLOAD_DIR = "uploads"
+STATIC_DIR = "static"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Dependency to get database session
 def get_db():
@@ -96,19 +99,36 @@ def login_user(
     db: Session = Depends(get_db)
 ):
     """Authenticate user and create session"""
-    user = db.query(models.User).filter(models.User.email == email).first()
-    if not user or not auth.verify_password(password, str(user.password)):
+    try:
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if not user or not auth.verify_password(password, str(user.password)):
+            return templates.TemplateResponse("auth.html", {
+                "request": request,
+                "action": "login",
+                "error": "Invalid email or password",
+                "email": email
+            })
+        
+        token = auth.create_access_token({"sub": user.email})
+        response = RedirectResponse("/", status_code=303)
+        response.set_cookie(
+            key="access_token", 
+            value=token, 
+            httponly=True,
+            max_age=3600,
+            secure=False,
+            samesite="lax"
+        )
+        return response
+    
+    except Exception as e:
+        print(f"Login error: {e}")
         return templates.TemplateResponse("auth.html", {
             "request": request,
-            "action": "login",
-            "error": "Invalid email or password",
+            "action": "login", 
+            "error": "Login temporarily unavailable. Please try again.",
             "email": email
         })
-    
-    token = auth.create_access_token({"sub": user.email})
-    response = RedirectResponse("/", status_code=303)
-    response.set_cookie(key="access_token", value=token, httponly=True)
-    return response
 
 @app.get("/logout")
 def logout_user():
@@ -116,6 +136,11 @@ def logout_user():
     response = RedirectResponse("/", status_code=303)
     response.delete_cookie(key="access_token")
     return response
+
+@app.get("/sw.js")
+def service_worker():
+    """Serve the service worker file"""
+    return FileResponse("static/sw.js", media_type="application/javascript")
 
 # Frontend HTML Routes with Search and Filtering
 @app.get("/", response_class=HTMLResponse)
