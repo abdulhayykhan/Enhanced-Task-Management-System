@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a backend API for a task management system built with FastAPI and SQLAlchemy. The system provides RESTful endpoints for creating, reading, updating, and deleting tasks. Each task has a title, description, status, and due date. The API includes data validation through Pydantic schemas and supports database operations through SQLAlchemy ORM.
+This is a full-stack task management system built with FastAPI and SQLAlchemy. The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks. Each task has a title, description, status, and due date. The application includes data validation through Pydantic schemas, HTML templates using Jinja2, and supports database operations through SQLAlchemy ORM with PostgreSQL database integration.
 
 ## User Preferences
 
@@ -14,14 +14,22 @@ Preferred communication style: Simple, everyday language.
 - **FastAPI**: Modern Python web framework chosen for its automatic API documentation, built-in validation, and async support
 - **SQLAlchemy ORM**: Database abstraction layer providing object-relational mapping and database-agnostic operations
 - **Pydantic**: Data validation and serialization using Python type hints
+- **Jinja2**: Template engine for rendering HTML pages with dynamic content
+
+### Frontend Framework
+- **HTML Templates**: Server-rendered HTML pages using Jinja2 templating
+- **Bootstrap CSS**: Responsive UI framework for styling and layout
+- **Form-based Interaction**: Traditional web forms for task creation and editing without JavaScript
 
 ### Database Design
 - **Single Entity Model**: Simple Task model with fields for id, title, description, status, and due_date
-- **SQLite Default**: Uses SQLite for local development with environment variable support for production databases
-- **Auto-migration**: Database tables are created automatically on application startup
+- **PostgreSQL Database**: Uses PostgreSQL database with automatic table creation on application startup
+- **Environment-based Configuration**: Database connection managed through DATABASE_URL environment variable
 
 ### API Structure
-- **RESTful Design**: Standard HTTP methods (GET, POST, PUT, DELETE) for task operations
+- **Dual Interface**: Both web interface and REST API endpoints available
+- **HTML Routes**: Server-rendered pages at `/`, `/tasks/new`, `/tasks/{id}`, `/tasks/{id}/edit`, `/tasks/{id}/delete`
+- **API Routes**: JSON endpoints at `/api/tasks` with full CRUD operations
 - **Response Models**: Consistent API responses using Pydantic schemas
 - **Error Handling**: HTTP status codes and exception handling for invalid requests
 - **CORS Enabled**: Cross-origin resource sharing configured for frontend integration

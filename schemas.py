@@ -13,10 +13,12 @@ class TaskCreate(TaskBase):
     """Schema for creating a new task"""
     pass
 
-class TaskUpdate(TaskBase):
+class TaskUpdate(BaseModel):
     """Schema for updating an existing task"""
     title: Optional[str] = Field(None, min_length=1, max_length=200, description="Task title")
+    description: Optional[str] = Field(None, max_length=1000, description="Task description")
     status: Optional[str] = Field(None, description="Task status")
+    due_date: Optional[date] = Field(None, description="Task due date")
 
 class TaskOut(TaskBase):
     """Schema for task output with ID"""

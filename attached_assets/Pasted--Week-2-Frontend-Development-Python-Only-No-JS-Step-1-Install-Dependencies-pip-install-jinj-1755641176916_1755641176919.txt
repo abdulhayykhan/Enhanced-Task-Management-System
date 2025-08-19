@@ -1,0 +1,170 @@
+🚀 Week 2 – Frontend Development (Python Only, No JS)
+Step 1 – Install Dependencies
+pip install jinja2 python-multipart fastapi[all]
+
+Step 2 – Setup Templates Folder
+
+Create a folder:
+
+/templates
+    ├── base.html
+    ├── index.html
+    ├── detail.html
+    └── form.html
+
+Step 3 – Base Template
+
+templates/base.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h1 class="text-center mb-4">Task Management System</h1>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
+
+Step 4 – Task List Page
+
+templates/index.html
+
+{% extends "base.html" %}
+{% block content %}
+<a href="/tasks/new" class="btn btn-primary mb-3">+ Add Task</a>
+<table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th>Title</th><th>Status</th><th>Due Date</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for task in tasks %}
+    <tr>
+      <td><a href="/tasks/{{ task.id }}">{{ task.title }}</a></td>
+      <td>{{ task.status }}</td>
+      <td>{{ task.due_date }}</td>
+      <td>
+        <a href="/tasks/{{ task.id }}/edit" class="btn btn-sm btn-warning">Edit</a>
+        <a href="/tasks/{{ task.id }}/delete" class="btn btn-sm btn-danger">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+Step 5 – Task Detail Page
+
+templates/detail.html
+
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ task.title }}</h2>
+<p>{{ task.description }}</p>
+<p><strong>Status:</strong> {{ task.status }}</p>
+<p><strong>Due Date:</strong> {{ task.due_date }}</p>
+<a href="/" class="btn btn-secondary">Back</a>
+{% endblock %}
+
+Step 6 – Task Form Page
+
+templates/form.html
+
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">Title</label>
+    <input type="text" class="form-control" name="title" value="{{ task.title if task else '' }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Description</label>
+    <textarea class="form-control" name="description">{{ task.description if task else '' }}</textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Status</label>
+    <select class="form-control" name="status">
+      <option {% if task and task.status == "Pending" %}selected{% endif %}>Pending</option>
+      <option {% if task and task.status == "In Progress" %}selected{% endif %}>In Progress</option>
+      <option {% if task and task.status == "Completed" %}selected{% endif %}>Completed</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Due Date</label>
+    <input type="date" class="form-control" name="due_date" value="{{ task.due_date if task else '' }}">
+  </div>
+  <button type="submit" class="btn btn-success">Save</button>
+</form>
+{% endblock %}
+
+Step 7 – FastAPI Routes for Pages
+
+Update main.py:
+
+from fastapi import FastAPI, Request, Form, Depends
+from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+import models, crud
+from database import SessionLocal, engine, Base
+
+Base.metadata.create_all(bind=engine)
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/")
+def read_root(request: Request, db: Session = Depends(get_db)):
+    tasks = crud.get_tasks(db)
+    return templates.TemplateResponse("index.html", {"request": request, "tasks": tasks})
+
+@app.get("/tasks/new")
+def new_task(request: Request):
+    return templates.TemplateResponse("form.html", {"request": request, "task": None})
+
+@app.post("/tasks/new")
+def create_task(request: Request, title: str = Form(...), description: str = Form(""), status: str = Form("Pending"), due_date: str = Form(None), db: Session = Depends(get_db)):
+    crud.create_task(db, models.Task(title=title, description=description, status=status, due_date=due_date))
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/tasks/{task_id}")
+def task_detail(task_id: int, request: Request, db: Session = Depends(get_db)):
+    task = crud.get_task(db, task_id)
+    return templates.TemplateResponse("detail.html", {"request": request, "task": task})
+
+@app.get("/tasks/{task_id}/edit")
+def edit_task(task_id: int, request: Request, db: Session = Depends(get_db)):
+    task = crud.get_task(db, task_id)
+    return templates.TemplateResponse("form.html", {"request": request, "task": task})
+
+@app.post("/tasks/{task_id}/edit")
+def update_task(task_id: int, request: Request, title: str = Form(...), description: str = Form(""), status: str = Form("Pending"), due_date: str = Form(None), db: Session = Depends(get_db)):
+    crud.update_task(db, task_id, models.Task(title=title, description=description, status=status, due_date=due_date))
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/tasks/{task_id}/delete")
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    crud.delete_task(db, task_id)
+    return RedirectResponse("/", status_code=303)
+
+
+✅ Deliverables for Week 2 (Python-only):
+
+Fully working HTML frontend served by FastAPI.
+
+CRUD forms without any JavaScript.
+
+Responsive UI via Bootstrap.
