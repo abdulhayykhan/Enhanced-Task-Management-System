@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a full-stack task management system built with FastAPI and SQLAlchemy. The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks. Key features include user authentication with secure password hashing, advanced search and filtering capabilities, progress tracking, and comprehensive testing. Each task has a title, description, status, and due date. The application includes data validation through Pydantic schemas, HTML templates using Jinja2, user authentication with JWT tokens, and supports database operations through SQLAlchemy ORM with PostgreSQL database integration.
+This is a full-stack collaborative task management system built with FastAPI and SQLAlchemy. The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks. Key features include user authentication, task sharing between users, real-time notifications via WebSockets, advanced search and filtering capabilities, progress tracking, and comprehensive testing. Each task has a title, description, status, due date, and can be shared with multiple users. The application includes data validation through Pydantic schemas, HTML templates using Jinja2, user authentication with JWT tokens, real-time collaboration features, and supports database operations through SQLAlchemy ORM with PostgreSQL database integration.
 
 ## User Preferences
 
@@ -29,16 +29,20 @@ Preferred communication style: Simple, everyday language.
 - **Session Management**: Automatic login/logout with token expiration
 
 ### Database Design
-- **Multi-Entity Model**: Task and User models with relationship mapping
+- **Multi-Entity Model**: Task, User, and Notification models with complex relationship mapping
+- **Task Sharing**: Many-to-many relationship between tasks and users via task_shares association table
 - **PostgreSQL Database**: Uses PostgreSQL database with automatic table creation on application startup
-- **Database Indexes**: Optimized queries with indexes on status, due_date, and username fields
-- **Foreign Key Relationships**: Tasks can be associated with users for future user-specific features
+- **Database Indexes**: Optimized queries with indexes on status, due_date, username, and notification fields
+- **Foreign Key Relationships**: Tasks have owners and can be shared with multiple users
+- **Notification System**: Persistent notification storage with read/unread status tracking
 - **Environment-based Configuration**: Database connection managed through DATABASE_URL environment variable
 
 ### API Structure
 - **Dual Interface**: Both web interface and REST API endpoints available
 - **HTML Routes**: Server-rendered pages at `/`, `/tasks/new`, `/tasks/{id}`, `/tasks/{id}/edit`, `/tasks/{id}/delete`
 - **Authentication Routes**: `/register`, `/login`, `/logout` for user management
+- **Collaboration Routes**: `/tasks/{id}/share`, `/tasks/shared`, `/notifications` for team features
+- **WebSocket Endpoint**: `/ws/{user_id}` for real-time notification delivery
 - **API Routes**: JSON endpoints at `/api/tasks` with full CRUD operations and search capabilities
 - **Search & Filter**: Query parameters for searching tasks by title/description and filtering by status
 - **Response Models**: Consistent API responses using Pydantic schemas
@@ -62,19 +66,33 @@ Preferred communication style: Simple, everyday language.
 - **Search Functionality**: Full-text search across task titles and descriptions
 - **Status Filtering**: Filter tasks by completion status (Pending, In Progress, Completed)
 - **User Authentication**: Secure registration and login system
+- **Task Collaboration**: Share tasks with other users for collaborative work
+- **Real-time Notifications**: WebSocket-powered instant notifications for task updates
+- **Notification Management**: Persistent notification system with read/unread tracking
+- **Task Ownership**: Clear distinction between task owners and shared users
+- **Status Change Alerts**: Automatic notifications when shared task status changes
 - **Responsive Design**: Mobile-friendly interface using Bootstrap
 - **Comprehensive Testing**: Unit tests covering API endpoints and web pages
+
+### Collaboration Features
+- **Task Sharing**: Task owners can share tasks with other users
+- **Real-time Updates**: WebSocket connections for instant notifications
+- **Notification System**: Database-persisted notifications with WebSocket delivery
+- **User Collaboration**: Multiple users can view and edit shared tasks
+- **Status Notifications**: Automatic alerts when shared tasks are updated
+- **Shared Task Views**: Dedicated page for viewing tasks shared with you
 
 ## External Dependencies
 
 ### Core Dependencies
-- **FastAPI**: Web framework for building the REST API
+- **FastAPI**: Web framework for building the REST API with WebSocket support
 - **Uvicorn**: ASGI server for running the FastAPI application
 - **SQLAlchemy**: ORM for database operations and model definitions
 - **Pydantic**: Data validation and serialization library
 - **Jinja2**: Template engine for HTML rendering
 - **Passlib**: Password hashing library with bcrypt support
 - **Python-JOSE**: JWT token handling for authentication
+- **WebSockets**: Real-time communication for instant notifications
 - **Pytest**: Testing framework for unit tests
 - **HTTPX**: HTTP client for API testing
 
@@ -90,9 +108,11 @@ Preferred communication style: Simple, everyday language.
 - **Development Server**: Auto-reload during development for faster iteration
 
 ### Future Integration Points
-- User-specific task management (tasks filtered by owner)
-- Email notifications for due dates
-- Task categories and tags
-- Team collaboration features
+- Email notifications for due dates and task updates
+- Task categories and tags for better organization
+- Advanced task filtering (by owner, shared status, date ranges)
+- Team workspaces and project management
 - Mobile app integration via REST API
 - Advanced analytics and reporting
+- File attachments to tasks
+- Task comments and discussion threads

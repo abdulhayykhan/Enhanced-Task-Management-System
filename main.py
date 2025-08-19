@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Form, Query
+from fastapi import FastAPI, Depends, HTTPException, Request, Form, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -8,6 +8,8 @@ from database import SessionLocal, engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import auth
+import notifications
+import asyncio
 
 # Create FastAPI app instance
 app = FastAPI(title="Task Management System", version="1.0")
@@ -188,7 +190,7 @@ def create_task_form(
     # Create task with user association if logged in
     task = crud.create_task(db=db, task=task_data)
     if current_user:
-        task.user_id = current_user.id
+        task.owner_id = current_user.id
         db.commit()
     
     return RedirectResponse("/", status_code=303)
@@ -238,6 +240,13 @@ def update_task_form(
         except ValueError:
             parsed_due_date = None
     
+    # Get task to check for status changes and shared users
+    task = crud.get_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    old_status = task.status
+    
     # Update task using schema
     task_data = schemas.TaskUpdate(
         title=title,
@@ -248,6 +257,16 @@ def update_task_form(
     updated = crud.update_task(db, task_id, task_data)
     if not updated:
         raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Notify shared users if status changed
+    if old_status != status and task.shared_with:
+        current_user = auth.get_current_user(request, db)
+        updater_name = current_user.username if current_user else "Someone"
+        message = f"Task '{task.title}' status changed from '{old_status}' to '{status}' by {updater_name}"
+        
+        for shared_user in task.shared_with:
+            asyncio.create_task(notifications.notify_user(db, shared_user.id, message))
+    
     return RedirectResponse("/", status_code=303)
 
 @app.get("/tasks/{task_id}/delete")
@@ -257,6 +276,141 @@ def delete_task_form(task_id: int, db: Session = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=404, detail="Task not found")
     return RedirectResponse("/", status_code=303)
+
+# WebSocket endpoint for real-time notifications
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    """WebSocket endpoint for real-time notifications"""
+    await notifications.manager.connect(user_id, websocket)
+    try:
+        while True:
+            # Keep connection alive and listen for messages
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        notifications.manager.disconnect(user_id)
+
+# Task Sharing Routes
+@app.get("/tasks/{task_id}/share", response_class=HTMLResponse)
+def share_task_page(task_id: int, request: Request, db: Session = Depends(get_db)):
+    """Show form to share a task with another user"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    task = crud.get_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Check if user owns the task
+    if task.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to share this task")
+    
+    return templates.TemplateResponse("share_task.html", {
+        "request": request,
+        "task": task,
+        "current_user": current_user
+    })
+
+@app.post("/tasks/{task_id}/share")
+async def share_task_action(
+    task_id: int,
+    request: Request,
+    username: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Share a task with another user"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    task = crud.get_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Check if user owns the task
+    if task.owner_id != current_user.id:
+        return templates.TemplateResponse("share_task.html", {
+            "request": request,
+            "task": task,
+            "current_user": current_user,
+            "error": "Not authorized to share this task"
+        })
+    
+    # Find user to share with
+    user_to_share = db.query(models.User).filter(models.User.username == username).first()
+    if not user_to_share:
+        return templates.TemplateResponse("share_task.html", {
+            "request": request,
+            "task": task,
+            "current_user": current_user,
+            "error": "User not found"
+        })
+    
+    # Check if already shared
+    if user_to_share in task.shared_with:
+        return templates.TemplateResponse("share_task.html", {
+            "request": request,
+            "task": task,
+            "current_user": current_user,
+            "error": f"Task is already shared with {username}"
+        })
+    
+    # Share the task
+    task.shared_with.append(user_to_share)
+    db.commit()
+    
+    # Send notification
+    message = f"Task '{task.title}' was shared with you by {current_user.username}"
+    await notifications.notify_user(db, user_to_share.id, message)
+    
+    return RedirectResponse(f"/tasks/{task_id}", status_code=303)
+
+@app.get("/tasks/shared", response_class=HTMLResponse)
+def get_shared_tasks(request: Request, db: Session = Depends(get_db)):
+    """Show tasks shared with the current user"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    shared_tasks = current_user.shared_tasks
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "tasks": shared_tasks,
+        "q": None,
+        "status": None,
+        "current_user": current_user
+    })
+
+@app.get("/notifications", response_class=HTMLResponse)
+def get_notifications(request: Request, db: Session = Depends(get_db)):
+    """Show user notifications"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    user_notifications = db.query(models.Notification).filter(
+        models.Notification.user_id == current_user.id
+    ).order_by(models.Notification.created_at.desc()).all()
+    
+    return templates.TemplateResponse("notifications.html", {
+        "request": request,
+        "notifications": user_notifications,
+        "current_user": current_user
+    })
+
+@app.post("/notifications/{notification_id}/mark-read")
+def mark_notification_read(
+    notification_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Mark a notification as read"""
+    current_user = auth.get_current_user(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=303)
+    
+    notifications.mark_notification_read(db, notification_id, current_user.id)
+    return RedirectResponse("/notifications", status_code=303)
 
 # API Routes (for programmatic access)
 @app.get("/api")

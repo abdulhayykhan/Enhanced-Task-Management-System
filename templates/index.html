@@ -41,6 +41,8 @@
   <div>
     <a href="/tasks/new" class="btn btn-primary">+ Add Task</a>
     {% if current_user %}
+      <a href="/tasks/shared" class="btn btn-info">Shared Tasks</a>
+      <a href="/notifications" class="btn btn-warning">Notifications</a>
       <a href="/logout" class="btn btn-outline-secondary">Logout</a>
     {% else %}
       <a href="/login" class="btn btn-outline-primary">Login</a>

@@ -22,9 +22,27 @@
         
         <div class="d-flex gap-2">
           <a href="/tasks/{{ task.id }}/edit" class="btn btn-warning">Edit Task</a>
+          {% if current_user and task.owner_id == current_user.id %}
+            <a href="/tasks/{{ task.id }}/share" class="btn btn-info">Share Task</a>
+          {% endif %}
           <a href="/tasks/{{ task.id }}/delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this task?')">Delete Task</a>
           <a href="/" class="btn btn-secondary">Back to Tasks</a>
         </div>
+        
+        {% if task.shared_with %}
+        <hr>
+        <h5>Shared with:</h5>
+        <div class="d-flex flex-wrap gap-2">
+          {% for user in task.shared_with %}
+            <span class="badge bg-secondary">{{ user.username }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if task.owner %}
+        <hr>
+        <p><strong>Task Owner:</strong> {{ task.owner.username }}</p>
+        {% endif %}
       </div>
     </div>
   </div>
