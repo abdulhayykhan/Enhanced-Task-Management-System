@@ -393,7 +393,7 @@ async def share_task_action(
     
     return RedirectResponse(f"/tasks/{task_id}", status_code=303)
 
-@app.get("/tasks/shared", response_class=HTMLResponse)
+@app.get("/shared-tasks", response_class=HTMLResponse)
 def get_shared_tasks(request: Request, db: Session = Depends(get_db)):
     """Show tasks shared with the current user"""
     current_user = auth.get_current_user(request, db)
@@ -406,7 +406,8 @@ def get_shared_tasks(request: Request, db: Session = Depends(get_db)):
         "tasks": shared_tasks,
         "q": None,
         "status": None,
-        "current_user": current_user
+        "current_user": current_user,
+        "page_title": "Shared Tasks"
     })
 
 @app.get("/notifications", response_class=HTMLResponse)

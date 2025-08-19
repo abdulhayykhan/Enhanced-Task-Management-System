@@ -14,7 +14,7 @@ def get_task(db: Session, task_id: int) -> Optional[models.Task]:
 
 def create_task(db: Session, task: schemas.TaskCreate) -> models.Task:
     """Create a new task in the database"""
-    db_task = models.Task(**task.dict())
+    db_task = models.Task(**task.model_dump())
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
@@ -25,7 +25,7 @@ def update_task(db: Session, task_id: int, task: schemas.TaskUpdate) -> Optional
     db_task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if db_task:
         # Only update fields that were provided (exclude_unset=True)
-        update_data = task.dict(exclude_unset=True)
+        update_data = task.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(db_task, key, value)
         db.commit()

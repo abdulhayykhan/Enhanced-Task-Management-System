@@ -176,11 +176,11 @@ const inProgressData = [];
 // Group data by week
 const trendData = {};
 {% for trend in trends %}
-const weekKey = "{{ trend.year }}-W{{ trend.week }}";
-if (!trendData[weekKey]) {
-    trendData[weekKey] = { completed: 0, pending: 0, in_progress: 0 };
+const weekKey{{ loop.index }} = "{{ trend.year }}-W{{ trend.week }}";
+if (!trendData[weekKey{{ loop.index }}]) {
+    trendData[weekKey{{ loop.index }}] = { completed: 0, pending: 0, in_progress: 0 };
 }
-trendData[weekKey]['{{ trend.status|replace(" ", "_")|lower }}'] = {{ trend.count }};
+trendData[weekKey{{ loop.index }}]['{{ trend.status|replace(" ", "_")|lower }}'] = {{ trend.count }};
 {% endfor %}
 
 // Convert to arrays for Chart.js
