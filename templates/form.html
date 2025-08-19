@@ -9,7 +9,7 @@
         </h3>
       </div>
       <div class="card-body">
-        <form method="post">
+        <form method="post" {% if not task %}enctype="multipart/form-data"{% endif %}>
           <div class="mb-3">
             <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="title" name="title" 
@@ -36,6 +36,14 @@
             <input type="date" class="form-control" id="due_date" name="due_date" 
                    value="{{ task.due_date if task else '' }}">
           </div>
+          
+          {% if not task %}
+          <div class="mb-3">
+            <label for="attachment" class="form-label">Attachment</label>
+            <input type="file" class="form-control" id="attachment" name="attachment">
+            <div class="form-text">Optional: Upload a file to attach to this task.</div>
+          </div>
+          {% endif %}
           
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-success">

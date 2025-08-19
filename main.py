@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Form, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Depends, HTTPException, Request, Form, Query, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import models, schemas, crud
@@ -10,6 +11,8 @@ from datetime import datetime
 import auth
 import notifications
 import asyncio
+import shutil
+import os
 
 # Create FastAPI app instance
 app = FastAPI(title="Task Management System", version="1.0")
@@ -28,6 +31,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup uploads directory and static files
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Dependency to get database session
 def get_db():
@@ -160,15 +168,16 @@ def new_task(request: Request, db: Session = Depends(get_db)):
     })
 
 @app.post("/tasks/new")
-def create_task_form(
+async def create_task_form(
     request: Request,
     title: str = Form(...),
     description: str = Form(""),
     status: str = Form("Pending"),
     due_date: str = Form(None),
+    attachment: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
-    """Create a new task from form submission"""
+    """Create a new task from form submission with file upload"""
     current_user = auth.get_current_user(request, db)
     
     # Convert due_date string to date object if provided
@@ -178,6 +187,18 @@ def create_task_form(
             parsed_due_date = datetime.strptime(due_date, "%Y-%m-%d").date()
         except ValueError:
             parsed_due_date = None
+    
+    # Handle file upload
+    filename = None
+    if attachment and attachment.filename:
+        # Create safe filename
+        safe_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{attachment.filename}"
+        file_path = os.path.join(UPLOAD_DIR, safe_filename)
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(attachment.file, buffer)
+        filename = safe_filename
     
     # Create task using schema
     task_data = schemas.TaskCreate(
@@ -191,7 +212,9 @@ def create_task_form(
     task = crud.create_task(db=db, task=task_data)
     if current_user:
         task.owner_id = current_user.id
-        db.commit()
+    if filename:
+        task.attachment = filename
+    db.commit()
     
     return RedirectResponse("/", status_code=303)
 

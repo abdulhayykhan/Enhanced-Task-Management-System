@@ -35,6 +35,7 @@ class Task(Base):
     status = Column(String, default="Pending", nullable=False, index=True)
     due_date = Column(Date, nullable=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    attachment = Column(String, nullable=True)  # store filename
     
     # Relationships
     owner = relationship("User", back_populates="owned_tasks")

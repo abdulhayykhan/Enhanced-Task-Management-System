@@ -20,6 +20,17 @@
           <p class="text-muted">{{ task.due_date if task.due_date else "No due date set" }}</p>
         </div>
         
+        {% if task.attachment %}
+        <div class="mb-3">
+          <h5>Attachment</h5>
+          <p>
+            <a href="/uploads/{{ task.attachment }}" target="_blank" class="btn btn-outline-primary btn-sm">
+              📎 Download {{ task.attachment }}
+            </a>
+          </p>
+        </div>
+        {% endif %}
+        
         <div class="d-flex gap-2">
           <a href="/tasks/{{ task.id }}/edit" class="btn btn-warning">Edit Task</a>
           {% if current_user and task.owner_id == current_user.id %}
