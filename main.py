@@ -264,8 +264,13 @@ def update_task_form(
         updater_name = current_user.username if current_user else "Someone"
         message = f"Task '{task.title}' status changed from '{old_status}' to '{status}' by {updater_name}"
         
-        for shared_user in task.shared_with:
-            asyncio.create_task(notifications.notify_user(db, shared_user.id, message))
+        # Create notification task for each shared user
+        async def notify_all_users():
+            for shared_user in task.shared_with:
+                await notifications.notify_user(db, shared_user.id, message)
+        
+        # Run the async notification in background
+        asyncio.create_task(notify_all_users())
     
     return RedirectResponse("/", status_code=303)
 
@@ -411,6 +416,31 @@ def mark_notification_read(
     
     notifications.mark_notification_read(db, notification_id, current_user.id)
     return RedirectResponse("/notifications", status_code=303)
+
+# Analytics Routes
+@app.get("/analytics/overview")
+def analytics_overview_api(db: Session = Depends(get_db)):
+    """Get analytics overview data via API"""
+    return crud.get_analytics_overview(db)
+
+@app.get("/analytics", response_class=HTMLResponse)
+def analytics_dashboard(request: Request, db: Session = Depends(get_db)):
+    """Show analytics dashboard with charts and statistics"""
+    current_user = auth.get_current_user(request, db)
+    
+    overview = crud.get_analytics_overview(db)
+    trends = crud.get_weekly_trends(db)
+    monthly_stats = crud.get_monthly_stats(db)
+    user_productivity = crud.get_user_productivity(db)
+    
+    return templates.TemplateResponse("analytics.html", {
+        "request": request,
+        "overview": overview,
+        "trends": trends,
+        "monthly_stats": monthly_stats,
+        "user_productivity": user_productivity,
+        "current_user": current_user
+    })
 
 # API Routes (for programmatic access)
 @app.get("/api")

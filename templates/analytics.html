@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>📊 Analytics Dashboard</h2>
+  <a href="/" class="btn btn-secondary">Back to Tasks</a>
+</div>
+
+<!-- Overview Cards -->
+<div class="row text-center mb-4">
+  <div class="col-md-2">
+    <div class="card bg-light">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.total }}</h3>
+        <p class="card-text">Total Tasks</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card bg-success text-white">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.completed }}</h3>
+        <p class="card-text">Completed</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card bg-warning">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.in_progress }}</h3>
+        <p class="card-text">In Progress</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card bg-secondary text-white">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.pending }}</h3>
+        <p class="card-text">Pending</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card bg-danger text-white">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.overdue }}</h3>
+        <p class="card-text">Overdue</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card bg-info text-white">
+      <div class="card-body">
+        <h3 class="card-title">{{ overview.completion_rate }}%</h3>
+        <p class="card-text">Completion Rate</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+  <!-- Status Breakdown Chart -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Task Status Distribution</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="statusChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Weekly Trends Chart -->
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Weekly Task Trends</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="trendChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Productivity Chart -->
+{% if user_productivity %}
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">User Productivity</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="productivityChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Monthly Stats Table -->
+{% if monthly_stats %}
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Statistics</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Month/Year</th>
+                <th>Status</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stat in monthly_stats %}
+              <tr>
+                <td>{{ stat.month }}/{{ stat.year }}</td>
+                <td>
+                  <span class="badge {% if stat.status == 'Completed' %}bg-success{% elif stat.status == 'In Progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                    {{ stat.status }}
+                  </span>
+                </td>
+                <td>{{ stat.count }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Status Breakdown Pie Chart
+const statusCtx = document.getElementById('statusChart');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pending', 'In Progress', 'Completed', 'Overdue'],
+        datasets: [{
+            data: [{{ overview.pending }}, {{ overview.in_progress }}, {{ overview.completed }}, {{ overview.overdue }}],
+            backgroundColor: ['#6c757d', '#ffc107', '#28a745', '#dc3545'],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Weekly Trends Line Chart
+const trendCtx = document.getElementById('trendChart');
+{% if trends %}
+// Process trends data
+const weekLabels = [];
+const completedData = [];
+const pendingData = [];
+const inProgressData = [];
+
+// Group data by week
+const trendData = {};
+{% for trend in trends %}
+const weekKey = "{{ trend.year }}-W{{ trend.week }}";
+if (!trendData[weekKey]) {
+    trendData[weekKey] = { completed: 0, pending: 0, in_progress: 0 };
+}
+trendData[weekKey]['{{ trend.status|replace(" ", "_")|lower }}'] = {{ trend.count }};
+{% endfor %}
+
+// Convert to arrays for Chart.js
+Object.keys(trendData).sort().forEach(week => {
+    weekLabels.push(week);
+    completedData.push(trendData[week].completed || 0);
+    pendingData.push(trendData[week].pending || 0);
+    inProgressData.push(trendData[week].in_progress || 0);
+});
+
+new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: weekLabels,
+        datasets: [{
+            label: 'Completed',
+            data: completedData,
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            fill: false,
+            tension: 0.1
+        }, {
+            label: 'Pending',
+            data: pendingData,
+            borderColor: '#6c757d',
+            backgroundColor: 'rgba(108, 117, 125, 0.1)',
+            fill: false,
+            tension: 0.1
+        }, {
+            label: 'In Progress',
+            data: inProgressData,
+            borderColor: '#ffc107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            fill: false,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% else %}
+// No trend data available
+trendCtx.getContext('2d').fillText('No trend data available', 10, 50);
+{% endif %}
+
+// User Productivity Chart
+{% if user_productivity %}
+const productivityCtx = document.getElementById('productivityChart');
+new Chart(productivityCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for user in user_productivity %}"{{ user.username }}",{% endfor %}],
+        datasets: [{
+            label: 'Total Tasks',
+            data: [{% for user in user_productivity %}{{ user.total_tasks or 0 }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }, {
+            label: 'Completed Tasks',
+            data: [{% for user in user_productivity %}{{ user.completed_tasks or 0 }},{% endfor %}],
+            backgroundColor: 'rgba(40, 167, 69, 0.5)',
+            borderColor: 'rgba(40, 167, 69, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
