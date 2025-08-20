@@ -146,6 +146,36 @@ The system now features dedicated shared task views separating **"Tasks Shared w
 
 ---
 
+## 📁 Project Structure
+
+Enhanced-Task-Management-System/
+├── main.py                 # Entry point of the FastAPI application
+├── auth.py                 # Authentication & authorization (JWT, login, register)
+├── crud.py                 # CRUD operations (users, tasks, shares)
+├── database.py             # Database connection and session management
+├── models.py               # SQLAlchemy ORM models (User, Task, Notification, Shares)
+├── notifications.py        # Real-time notifications (WebSockets, persistence)
+├── schemas.py              # Pydantic schemas for validation & serialization
+├── tasks.db                # SQLite database file (local development)
+├── requirements.txt        # Python dependencies
+├── test_comprehensive.py   # Comprehensive test cases for the app
+├── test_main.py            # Unit tests for API and web routes
+├── static/                 # Static assets (CSS, JS, images)
+│   └── sw.js               # Service Worker for caching/notifications
+├── templates/              # Jinja2 HTML templates
+│   ├── base.html           # Base layout template
+│   ├── login.html          # Login page
+│   ├── register.html       # Registration page
+│   ├── tasks.html          # Task list & dashboard
+│   ├── task_detail.html    # Task detail view
+│   ├── task_edit.html      # Edit task form
+│   ├── task_new.html       # Create new task form
+│   ├── shared_tasks.html   # Tasks shared with the user
+│   └── analytics.html      # Analytics & progress tracking
+└── README.md               # Project documentation
+
+---
+
 ## 🚀 Running Locally
 ```
 # Clone repo
@@ -165,3 +195,26 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 - Open http://127.0.0.1:8000/login to get started
 - API docs at http://127.0.0.1:8000/docs
 
+---
+
+## 📢 LinkedIn & GitHub Showcase
+
+I’ll be posting a video and write-up on my [LinkedIn](https://www.linkedin.com/in/abdul-hayy-khan) profile showcasing this project and experience.
+
+[![View on LinkedIn](https://img.shields.io/badge/💼%20View%20Post-LinkedIn-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/abdul-hayy-khan/)
+
+---
+
+## 🙋‍♂️ Author
+
+**Abdul Hayy Khan**
+
+📫 abdulhayykhan.1@gmail.com
+
+---
+
+## 📌 License
+
+This project is for educational purposes as part of the **DeveloperHub Corporation** internship program. Feel free to use it for learning and inspiration. Attribution is appreciated.
+
+---
