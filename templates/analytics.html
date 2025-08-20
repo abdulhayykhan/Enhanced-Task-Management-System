@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-lg-8">
+    <h2 class="fw-bold text-primary mb-2">Analytics Dashboard</h2>
+    <p class="text-muted">Your personal productivity insights and task statistics</p>
+  </div>
+  <div class="col-lg-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+      <a href="/" class="btn btn-primary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Enhanced Overview Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold text-primary mb-2">{{ overview.total }}</div>
+        <h6 class="card-title mb-0">Total Tasks</h6>
+        <small class="text-muted">All your tasks</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card bg-success text-white text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold mb-2">{{ overview.completed }}</div>
+        <h6 class="card-title mb-0">Completed</h6>
+        <small class="opacity-75">Tasks finished</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card bg-warning text-white text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold mb-2">{{ overview.in_progress }}</div>
+        <h6 class="card-title mb-0">In Progress</h6>
+        <small class="opacity-75">Currently working</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card bg-secondary text-white text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold mb-2">{{ overview.pending }}</div>
+        <h6 class="card-title mb-0">Pending</h6>
+        <small class="opacity-75">Not started yet</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card bg-danger text-white text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold mb-2">{{ overview.overdue }}</div>
+        <h6 class="card-title mb-0">Overdue</h6>
+        <small class="opacity-75">Past due date</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-2 col-md-4 col-sm-6">
+    <div class="card bg-info text-white text-center h-100">
+      <div class="card-body">
+        <div class="display-6 fw-bold mb-2">{{ overview.upcoming or 0 }}</div>
+        <h6 class="card-title mb-0">Upcoming</h6>
+        <small class="opacity-75">Next 7 days</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title mb-0">Overall Progress</h5>
+          <span class="badge bg-primary fs-6">{{ overview.completion_rate }}% Complete</span>
+        </div>
+        <div class="progress mb-3" style="height: 20px;">
+          <div class="progress-bar bg-success" style="width: {{ overview.completion_rate }}%;">
+            {{ overview.completion_rate }}%
+          </div>
+        </div>
+        <div class="row text-center">
+          <div class="col-3">
+            <div class="text-success fw-bold">{{ overview.completed }}</div>
+            <small class="text-muted">Completed</small>
+          </div>
+          <div class="col-3">
+            <div class="text-warning fw-bold">{{ overview.in_progress }}</div>
+            <small class="text-muted">In Progress</small>
+          </div>
+          <div class="col-3">
+            <div class="text-secondary fw-bold">{{ overview.pending }}</div>
+            <small class="text-muted">Pending</small>
+          </div>
+          <div class="col-3">
+            <div class="text-danger fw-bold">{{ overview.overdue }}</div>
+            <small class="text-muted">Overdue</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts and Recent Tasks Row -->
+<div class="row">
+  <!-- Status Breakdown Chart -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Task Status Distribution</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="statusChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Recent Tasks -->
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Recent Tasks</h5>
+      </div>
+      <div class="card-body">
+        {% if recent_tasks %}
+          <div class="list-group list-group-flush">
+            {% for task in recent_tasks %}
+            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+              <div>
+                <h6 class="mb-1">{{ task.title }}</h6>
+                <small class="text-muted">{{ task.description[:50] }}{% if task.description|length > 50 %}...{% endif %}</small>
+              </div>
+              <span class="badge {% if task.status == 'Completed' %}bg-success{% elif task.status == 'In Progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                {{ task.status }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-tasks text-muted mb-3" style="font-size: 2rem;"></i>
+            <p class="text-muted">No tasks created yet</p>
+            <a href="/tasks/new" class="btn btn-primary btn-sm">Create Your First Task</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Personal Productivity Summary -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Your Productivity Summary</h5>
+      </div>
+      <div class="card-body">
+        {% if user_productivity %}
+          {% for user in user_productivity %}
+          <div class="row text-center g-3">
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="h4 text-primary fw-bold">{{ user.total_tasks }}</div>
+                <small class="text-muted">Total Tasks</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="h4 text-success fw-bold">{{ user.completed_tasks }}</div>
+                <small class="text-muted">Completed</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="h4 text-warning fw-bold">{{ user.in_progress_tasks }}</div>
+                <small class="text-muted">In Progress</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="border rounded p-3 h-100">
+                <div class="h4 text-secondary fw-bold">{{ user.pending_tasks }}</div>
+                <small class="text-muted">Pending</small>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-4">
+            <p class="text-muted">No productivity data available yet. Start creating tasks to see your statistics!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Status Breakdown Pie Chart
+const statusCtx = document.getElementById('statusChart');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pending', 'In Progress', 'Completed', 'Overdue'],
+        datasets: [{
+            data: [{{ overview.pending }}, {{ overview.in_progress }}, {{ overview.completed }}, {{ overview.overdue }}],
+            backgroundColor: ['#6c757d', '#ffc107', '#28a745', '#dc3545'],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}
