@@ -19,11 +19,6 @@ The system now features dedicated shared task views separating **"Tasks Shared w
 
 ---
 
-## 🎯 User Preferences
-- Preferred communication style: **Simple, everyday language**
-
----
-
 ## ⚙️ System Architecture
 
 ### 🔹 Backend Framework
