@@ -1,5 +1,7 @@
 # Enhanced Task Management System
 
+[![View App Live](https://img.shields.io/badge/🚀%20View%20App-Live-green?style=for-the-badge)](https://enhanced-task-management-system.onrender.com/login)
+
 ## 📌 Overview
 This is a full-stack collaborative task management system built with **FastAPI** and **SQLAlchemy**.  
 The system provides both a web interface and RESTful API endpoints for creating, reading, updating, and deleting tasks.  
