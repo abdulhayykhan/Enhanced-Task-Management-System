@@ -174,12 +174,13 @@ Enhanced-Task-Management-System/
 ## 🚀 Running Locally
 ```
 # Clone repo
-git clone https://github.com/your-username/task-management-system.git
-cd task-management-system
+git clone https://github.com/abdulhayykhan/Enhanced-Task-Management-System.git
+cd Enhanced-Task-Management-System
 
 # Create virtual environment
 python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+.venv\Scripts\activate        # On Windows
+source .venv/bin/activate     # On macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
