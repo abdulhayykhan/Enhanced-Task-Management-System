@@ -190,6 +190,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ## 📌 License
 
-This project is for educational purposes as part of the **DeveloperHub Corporation** internship program. Feel free to use it for learning and inspiration. Attribution is appreciated.
+This project is for educational purposes as part of the **DevelopersHub Corporation** internship program. Feel free to use it for learning and inspiration. Attribution is appreciated.
 
 ---
