@@ -119,10 +119,8 @@ It enables users to:
 
 - 📧 Email reminders for due dates  
 - 🏷 Task categories & tags  
-- 📊 Analytics & reporting  
 - 👥 Team workspaces & projects  
 - 📱 Mobile app integration (via REST API)  
-- 📎 File attachments  
 - 💬 Task comments/discussions  
 
 ---
@@ -131,26 +129,30 @@ It enables users to:
 
 ```
 Enhanced-Task-Management-System/
-├── main.py # Entry point
-├── auth.py # Authentication (JWT, login, register)
-├── crud.py # CRUD operations
-├── database.py # DB connection
-├── models.py # SQLAlchemy models
-├── notifications.py # WebSocket notifications
-├── schemas.py # Pydantic schemas
-├── static/ # CSS, JS, images
+├── main.py # Entry point of the FastAPI application
+├── auth.py # Authentication & authorization (JWT, login, register)
+├── crud.py # CRUD operations (users, tasks, shares)
+├── database.py # Database connection and session management
+├── models.py # SQLAlchemy ORM models (User, Task, Notification, Shares)
+├── notifications.py # Real-time notifications (WebSockets, persistence)
+├── schemas.py # Pydantic schemas for validation & serialization
+├── tasks.db # SQLite database file (local development)
+├── requirements.txt # Python dependencies
+├── test_comprehensive.py # Comprehensive test cases for the app
+├── test_main.py # Unit tests for API and web routes
+├── static/ # Static assets (CSS, JS, images)
+│ └── sw.js # Service Worker for caching/notifications
 ├── templates/ # Jinja2 HTML templates
-│ ├── base.html
-│ ├── login.html
-│ ├── register.html
-│ ├── tasks.html
-│ ├── shared_tasks.html
-│ └── analytics.html
-├── tests/ # Pytest test cases
-│ ├── test_main.py
-│ └── test_comprehensive.py
-├── requirements.txt # Dependencies
-└── README.md # Documentation
+│ ├── base.html # Base layout template
+│ ├── login.html # Login page
+│ ├── register.html # Registration page
+│ ├── tasks.html # Task list & dashboard
+│ ├── task_detail.html # Task detail view
+│ ├── task_edit.html # Edit task form
+│ ├── task_new.html # Create new task form
+│ ├── shared_tasks.html # Tasks shared with the user
+│ └── analytics.html # Analytics & progress tracking
+└── README.md # Project documentation
 ```
 
 ---
