@@ -182,7 +182,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ## 🙋‍♂️ Author
 
-**Abdul Hayy Khan**
+[**Abdul Hayy Khan**](https://www.linkedin.com/in/abdul-hayy-khan/) 
 
 📫 abdulhayykhan.1@gmail.com
 
