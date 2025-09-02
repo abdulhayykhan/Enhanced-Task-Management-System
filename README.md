@@ -1,7 +1,7 @@
 # ✅ Enhanced Task Management System  
 
 [![View App Live](https://img.shields.io/badge/🚀%20View%20App-Live-green?style=for-the-badge)](https://enhanced-task-management-system.onrender.com/login)      
-[![View on LinkedIn](https://img.shields.io/badge/💼%20View%20Post-LinkedIn-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/)  
+[![View on LinkedIn](https://img.shields.io/badge/💼%20View%20Post-LinkedIn-blue?style=for-the-badge&logo=linkedin)]([https://www.linkedin.com/](https://www.linkedin.com/posts/abdul-hayy-khan_%F0%9D%97%A3%F0%9D%97%BF%F0%9D%97%BC%F0%9D%98%82%F0%9D%97%B1-%F0%9D%98%81%F0%9D%97%BC-%F0%9D%97%B9%F0%9D%97%AE%F0%9D%98%82%F0%9D%97%BB%F0%9D%97%B0%F0%9D%97%B5-%F0%9D%97%BA%F0%9D%98%86-%F0%9D%97%B9%F0%9D%97%AE-activity-7368538272546975744-M7Wm/)) 
 
 ---
 
